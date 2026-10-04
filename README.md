@@ -1,6 +1,6 @@
 # Municipal Capital Project Tracker
 
-**Status: Prototype — in development.** This repository currently contains project documentation and a `.gitignore`; application code and a working demo have not been implemented.
+**Status: Prototype — read-only foundation implemented.** The app lists fictional capital projects and displays project details and milestones. Project editing and the broader construction workflows remain planned.
 
 A synthetic-data prototype for tracking public capital projects from request through construction and closeout. Its purpose is to keep project status, budget changes, decisions, and public updates connected to a shared history.
 
@@ -11,9 +11,9 @@ A synthetic-data prototype for tracking public capital projects from request thr
 - Present clear project summaries and SVG views using synthetic examples.
 - Separate public updates from internal notes and require deliberate publication of public-facing information.
 
-## Intended stack
+## Stack
 
-React, TypeScript, Cloudflare Workers, Cloudflare D1, and SVG data views. The schema, access roles, and publication workflow will be finalized during implementation.
+React, TypeScript, Cloudflare Workers, and Cloudflare D1 in npm workspaces. Protected APIs require a verified Cloudflare Access JWT for the configured owner. SVG views and deliberate publication workflows remain planned.
 
 ## Data boundaries
 
@@ -23,15 +23,25 @@ This application will have its own Worker and D1 database. Private records will 
 
 ## Getting started
 
-Clone the repository to begin implementation:
+Clone the repository:
 
 ```sh
 git clone https://github.com/BrandenFarmerDev/municipal-capital-project-tracker.git
 cd municipal-capital-project-tracker
 ```
 
-There are no install, development, test, or deployment commands yet. Add reproducible setup and quality checks alongside the first application implementation. Keep secrets in local ignored configuration or Worker secrets; `VITE_` variables are public.
+Requires Node 24 (see `.nvmrc`).
 
+```powershell
+npm ci
+npm run db:migrate:local   # apply the schema to the local D1 database
+npm run db:seed:local      # load fictional demo data
+npm run dev                # Worker on :8787 and Vite dev server
+npm test                   # unit tests
+npm run quality            # lint, coverage, duplication, types, build, migration, audit
+```
+
+Protected API routes need Cloudflare Access; local configuration uses placeholders, so they return 503 `auth_unconfigured` until real values are set (see `docs/deployment.md`). Keep secrets in local ignored configuration or Worker secrets; `VITE_` variables are public.
 ## Portfolio
 
 - [Project outline](https://brandenfarmer.com/work#municipal-capital-project-tracker)

@@ -1,0 +1,103 @@
+name: Continuous integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "bfarmer/**"]
+  workflow_dispatch:
+    inputs:
+      deploy_preview:
+        description: Deploy the reviewed branch to the synthetic-data preview
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run quality
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: quality-reports
+          path: |
+            app/*/coverage/
+            packages/*/coverage/
+            coverage/
+            reports/jscpd/
+          retention-days: 14
+
+  deploy:
+    name: Deploy application
+    needs: quality
+    if: >-
+      vars.ENABLE_DEPLOYMENTS == 'true' &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.deploy_preview && startsWith(github.ref, 'refs/heads/bfarmer/')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+    concurrency:
+      group: municipal-capital-project-tracker-${{ github.event_name == 'push' && 'production' || 'preview' }}
+      cancel-in-progress: false
+    env:
+      DEPLOY_ENVIRONMENT: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
+      WRANGLER_SEND_METRICS: "false"
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Block unconfigured or shared resources
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' && 'configured' || '' }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && 'configured' || '' }}
+        run: node scripts/validate-deployment.mjs "$DEPLOY_ENVIRONMENT"
+      - name: Validate Worker bundle and build frontend
+        run: |
+          npm run "build:$DEPLOY_ENVIRONMENT" --workspace @municipal-tracker/backend
+          npm run build --workspace @municipal-tracker/frontend
+      - name: Apply additive D1 migrations and deploy Worker
+        working-directory: app/backend
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx wrangler d1 migrations apply MCT_DB --remote --env "$DEPLOY_ENVIRONMENT"
+          npx wrangler deploy --env "$DEPLOY_ENVIRONMENT"
+      - name: Upload Pages frontend
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ "$DEPLOY_ENVIRONMENT" = "production" ]; then PAGES_BRANCH=main; else PAGES_BRANCH=preview; fi
+          npx wrangler pages deploy app/frontend/dist --force --project-name "$CLOUDFLARE_PAGES_PROJECT" --branch "$PAGES_BRANCH"
+      - name: Verify unauthenticated site and API are protected
+        run: node scripts/check-private-deployment.mjs
