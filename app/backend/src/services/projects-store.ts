@@ -39,8 +39,15 @@ interface MilestoneRow {
 }
 
 const PROJECT_COLUMNS = "id, project_number, name, description, phase, status, department, approved_budget_minor, currency_code, planned_start_date, planned_completion_date, created_at, updated_at";
-const CURSOR_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/;
-const CURSOR_ID = /^[0-9a-f-]{36}$/;
+const CURSOR_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
+const CURSOR_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+function isCursorTimestamp(value: string): boolean {
+  if (!CURSOR_TIMESTAMP.test(value)) return false;
+  const parsed = new Date(value);
+  const normalized = value.includes(".") ? value : value.replace("Z", ".000Z");
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === normalized;
+}
 
 export function encodeCursor(createdAt: string, id: string): string {
   return btoa(`${createdAt}|${id}`).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
@@ -54,7 +61,7 @@ export function decodeCursor(cursor: string): { createdAt: string; id: string } 
     throw new InvalidCursorError("Cursor is not valid base64url.");
   }
   const [createdAt = "", id = "", ...extra] = decoded.split("|");
-  if (extra.length > 0 || !CURSOR_TIMESTAMP.test(createdAt) || !CURSOR_ID.test(id)) throw new InvalidCursorError("Cursor is malformed.");
+  if (extra.length > 0 || !isCursorTimestamp(createdAt) || !CURSOR_ID.test(id)) throw new InvalidCursorError("Cursor is malformed.");
   return { createdAt, id };
 }
 

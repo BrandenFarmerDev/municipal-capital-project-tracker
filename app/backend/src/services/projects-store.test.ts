@@ -11,6 +11,19 @@ describe("cursor encoding", () => {
     expect(cursor).toMatch(/^[\w-]+$/);
     expect(decodeCursor(cursor)).toEqual({ createdAt: "2026-10-01T08:00:00Z", id: "a1000000-0000-4000-8000-000000000001" });
   });
+  it.each(["2024-02-29T23:59:59Z", "2026-10-01T08:00:00.123Z"])("accepts a real UTC timestamp %s", (timestamp) => {
+    expect(decodeCursor(encodeCursor(timestamp, "a1000000-0000-4000-8000-000000000001")).createdAt).toBe(timestamp);
+  });
+  it.each([
+    "2026-99-99T99:99:99Z", "2026-02-29T08:00:00Z", "2026-04-31T08:00:00Z",
+    "2026-10-01T24:00:00Z", "2026-10-01T08:60:00Z", "2026-10-01T08:00:60Z",
+    "2026-10-01T08Z", "2026-10-01T08:00:00.1Z", "2026-10-01T08:00:00+00:00",
+  ])("rejects an invalid UTC timestamp %s", (timestamp) => {
+    expect(() => decodeCursor(encodeCursor(timestamp, "a1000000-0000-4000-8000-000000000001"))).toThrow(InvalidCursorError);
+  });
+  it.each(["-".repeat(36), "a10000000000-4000-8000-000000000001---", "a1000000-0000-4000-8000-00000000000g"])("rejects an invalid UUID %s", (id) => {
+    expect(() => decodeCursor(encodeCursor("2026-10-01T08:00:00Z", id))).toThrow(InvalidCursorError);
+  });
   it.each([
     ["not base64", "!!!"],
     ["no separator", btoa("2026-10-01T08:00:00Z")],

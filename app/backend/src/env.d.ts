@@ -1,2 +1,2 @@
-// No Worker secrets are used yet. Declare them here as `interface Env` members when added.
+// OWNER_EMAIL is a required remote Worker secret; Wrangler generates its binding type.
 export {};

@@ -20,7 +20,7 @@ Both custom domains are active and owner-authenticated cross-origin browser requ
 
 ## Authentication
 
-Each environment uses one multi-domain Cloudflare Access application for its site and API, with its own AUD recorded in `app/backend/wrangler.jsonc`. The team domain is `cold-union-464d.cloudflareaccess.com`. The only Allow policy is `Portfolio owner only` (`2f08f97a-f619-47d4-abd1-dbe6ca15a943`), whose Include rule is the single email `branden_farmer@live.com`. No application bypass policy is configured. The Worker additionally verifies JWT signature, issuer, audience, expiry, and owner email with `jose`.
+Each environment uses one multi-domain Cloudflare Access application for its site and API, with its own AUD recorded in `app/backend/wrangler.jsonc`. The team domain is `cold-union-464d.cloudflareaccess.com`. The only Allow policy is `Portfolio owner only` (`2f08f97a-f619-47d4-abd1-dbe6ca15a943`), whose Include rule matches the single owner configured privately as the environment's `OWNER_EMAIL` Worker secret. No application bypass policy is configured. The Worker additionally verifies JWT signature, issuer, audience, expiry, and owner email with `jose`.
 
 HTTP-only and eager redirect cookies are enabled. Eager issuance supplies API-host cookies for browser fetches from the site. Use the canonical custom site hostname: the API permits one exact site origin per environment. Pages default and hashed hostnames are Access-protected alternative asset URLs, not additional permitted API origins.
 
@@ -32,7 +32,7 @@ The preview site's proxied CNAME targets `preview.municipal-capital-project-trac
 
 ## Credentials and automation
 
-GitHub environments `production` and `preview` exist. Repository variable `CLOUDFLARE_PAGES_PROJECT` and each environment's `SITE_ORIGIN` and `VITE_API_BASE_URL` are set. Repository secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` are configured. The token is saved in Bitwarden under `Credentials/shared` as `municipal-tracker / shared / cloudflare / GITHUB_DEPLOY_TOKEN`; its notes record the account ID and scopes. The current JWT-verification design needs no application Worker secrets: team domain, AUD, origin, and owner email are configuration.
+GitHub environments `production` and `preview` exist. Repository variable `CLOUDFLARE_PAGES_PROJECT` and each environment's `SITE_ORIGIN` and `VITE_API_BASE_URL` are set. Repository secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` are configured. The token is saved in Bitwarden under `Credentials/shared` as `municipal-tracker / shared / cloudflare / GITHUB_DEPLOY_TOKEN`; its notes record the account ID and scopes. Each remote Worker requires its own `OWNER_EMAIL` secret; team domain, AUD, and origin remain non-secret configuration. Only fictional owner placeholders belong in source; `.dev.vars.example` provides one for optional local configuration. Configure the real owner interactively with `npx wrangler secret put OWNER_EMAIL --env <environment>` from `app/backend`; align it with the Access policy. To convert an existing plaintext binding atomically, deploy with an ignored secrets file using `npx wrangler deploy --env <environment> --secrets-file <ignored-file>`. Wrangler preserves the secret during subsequent deploys and blocks deployment when a required secret is absent. Local `ACCESS_AUD` stays unconfigured unless separately configured; protected routes still fail closed. See [Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/).
 
 The approved deployment token grants account D1, Pages, and Worker Scripts Write, plus Workers Routes Write and Zone Read restricted to `brandenfarmer.com`, with expiry October 4, 2027. Its value is stored only in Bitwarden and the GitHub Actions secret. Never put it in source, logs, or `VITE_` variables. Rotate before expiry. The scopes exclude Access administration and DNS Write.
 
@@ -41,7 +41,7 @@ The approved deployment token grants account D1, Pages, and Worker Scripts Write
 ## Routine release
 
 1. Run `npm ci` and `npm run quality`. After Worker configuration changes, run `npm run cf:types`.
-2. Run `node scripts/validate-deployment.mjs <preview|production>` with that environment's variables and secret-presence values. The guard rejects placeholders, reused resources, malformed auth configuration, and API URLs that do not match the Worker custom domain.
+2. Run `node scripts/validate-deployment.mjs <preview|production>` with that environment's variables and secret-presence values. The guard rejects placeholders, reused D1 IDs/names, Worker names, custom-domain routes, Access audiences, missing owner-secret declarations, malformed auth configuration, and API URLs that do not match the Worker custom domain. Wrangler separately verifies required remote secrets at upload.
 3. Apply additive migrations from `app/backend`: `npx wrangler d1 migrations apply MCT_DB --remote --env <environment>`.
 4. Deploy the Worker with `npx wrangler deploy --env <environment>`.
 5. Build the frontend with the environment's public `VITE_API_BASE_URL`, then upload `app/frontend/dist` to Pages with the matching `main` or `preview` branch. CI uses `--force` to retain Pages behavior under Wrangler's agent-specific Worker delegation.

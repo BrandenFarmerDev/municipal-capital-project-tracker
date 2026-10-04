@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Paginated, ProjectDetail, ProjectSummary } from "@municipal-tracker/shared";
 import { projectsRoute } from "./projects";
 import { fixture } from "../test/fixtures";
+import { encodeCursor } from "../services/projects-store";
 
 const get = (path: string, method = "GET") => new Request(`https://api.example.com${path}`, { method });
 const FIRST = "a1000000-0000-4000-8000-000000000001";
@@ -32,6 +33,9 @@ describe("GET /api/projects", () => {
     ["/api/projects?limit=51", "invalid_limit"],
     ["/api/projects?limit=abc", "invalid_limit"],
     ["/api/projects?cursor=bad!", "invalid_cursor"],
+    [`/api/projects?cursor=${encodeCursor("2026-99-99T99:99:99Z", FIRST)}`, "invalid_cursor"],
+    [`/api/projects?cursor=${encodeCursor("2026-02-29T08:00:00Z", FIRST)}`, "invalid_cursor"],
+    [`/api/projects?cursor=${encodeCursor("2026-10-01T08:00:00Z", "-".repeat(36))}`, "invalid_cursor"],
   ])("rejects %s", async (path, code) => {
     const { env, close } = fixture();
     const response = await projectsRoute(get(path), env);

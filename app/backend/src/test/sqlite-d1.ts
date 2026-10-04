@@ -1,15 +1,20 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 
 type Value = string | number | boolean | null;
-const MIGRATIONS = ["0001_initial_schema.sql"];
+const MIGRATIONS_DIRECTORY = new URL("../../migrations/", import.meta.url);
+
+export const discoverMigrations = (directory = MIGRATIONS_DIRECTORY): string[] => readdirSync(directory, { withFileTypes: true })
+  .filter((entry) => entry.isFile() && /^\d+_.+\.sql$/.test(entry.name))
+  .map((entry) => entry.name)
+  .sort((left, right) => left.localeCompare(right, "en", { numeric: true }));
 
 export const readMigration = (name: string) => readFileSync(new URL(`../../migrations/${name}`, import.meta.url), "utf8");
 
-export function createTestD1() {
+export function createTestD1(migrationsDirectory = MIGRATIONS_DIRECTORY) {
   const database = new DatabaseSync(":memory:");
   database.exec("PRAGMA foreign_keys = ON");
-  for (const name of MIGRATIONS) database.exec(readMigration(name));
+  for (const name of discoverMigrations(migrationsDirectory)) database.exec(readFileSync(new URL(name, migrationsDirectory), "utf8"));
   const statement = (sql: string, raw: Value[] = []) => {
     const values = raw.map((value) => typeof value === "boolean" ? Number(value) : value);
     return {

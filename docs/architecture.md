@@ -22,4 +22,4 @@ Read-only initial module of the Municipal Capital Project Tracker. All data is s
 - **Soft-deleted `project_number` values are permanently reserved**, by design for this scaffold: `UNIQUE(tenant_id, project_number)` includes deleted rows.
 
 ## Cursor pagination
-Lists order by `created_at, id` and are served by `idx_projects_tenant_list (tenant_id, deleted_at, created_at, id)`. The cursor is an opaque base64url encoding of `created_at|id`; the store fetches `limit + 1` rows to determine `nextCursor`. Malformed cursors return 400.
+Lists order by `created_at, id` and are served by `idx_projects_tenant_list (tenant_id, deleted_at, created_at, id)`. The cursor is an opaque base64url encoding of `created_at|id`; timestamps must be real UTC calendar instants with seconds and optional three-digit milliseconds, and identifiers must be lowercase UUIDs in canonical hyphenated form. The store fetches `limit + 1` rows to determine `nextCursor`. Malformed cursors return 400 before querying D1.

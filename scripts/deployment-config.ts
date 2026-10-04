@@ -1,12 +1,14 @@
 export interface DeploymentEnvironment {
   name: string;
-  vars: { ALLOWED_ORIGIN: string; ACCESS_AUD: string; ACCESS_TEAM_DOMAIN: string; OWNER_EMAIL: string };
+  vars: { ALLOWED_ORIGIN: string; ACCESS_AUD: string; ACCESS_TEAM_DOMAIN: string };
+  secrets?: { required: string[] };
   routes: { pattern: string; custom_domain: boolean }[];
   d1_databases: { binding: string; database_name: string; database_id: string }[];
 }
 
 export interface DeploymentConfig {
   name: string;
+  vars?: Record<string, string>;
   d1_databases: DeploymentEnvironment["d1_databases"];
   env: Record<string, DeploymentEnvironment>;
 }
@@ -28,6 +30,8 @@ function resourceNames(config: DeploymentConfig): string[] {
 
 /** Static checks that hold for every environment, including the committed placeholders. */
 export function validateResourceIsolation(config: DeploymentConfig): void {
+  const variableSets = [config.vars, ...Object.values(config.env).map((environment) => environment.vars)];
+  if (variableSets.some((variables) => variables && "OWNER_EMAIL" in variables)) throw new Error("Declare OWNER_EMAIL as a required Worker secret, not a committed variable.");
   for (const name of resourceNames(config)) {
     if (FORBIDDEN_RESOURCE_FRAGMENTS.some((fragment) => name.toLowerCase().includes(fragment))) {
       throw new Error(`Resource name "${name}" is shared with or derived from a sibling application.`);
@@ -37,6 +41,13 @@ export function validateResourceIsolation(config: DeploymentConfig): void {
   if (new Set(ids).size !== ids.length) throw new Error("Every environment must use a different D1 database ID.");
   const databaseNames = [...config.d1_databases, ...Object.values(config.env).flatMap((environment) => environment.d1_databases)].map((database) => database.database_name);
   if (new Set(databaseNames).size !== databaseNames.length) throw new Error("Every environment must use a different D1 database name.");
+  const environments = Object.values(config.env);
+  const workerNames = [config.name, ...environments.map((environment) => environment.name)].map((name) => name.trim().toLowerCase());
+  if (new Set(workerNames).size !== workerNames.length) throw new Error("Every environment must use a different Worker name.");
+  const domains = environments.flatMap((environment) => environment.routes.filter((route) => route.custom_domain).map((route) => route.pattern.trim().toLowerCase().replace(/\.$/, "")));
+  if (new Set(domains).size !== domains.length) throw new Error("Every environment must use different custom-domain routes.");
+  const audiences = environments.map((environment) => environment.vars.ACCESS_AUD.toLowerCase());
+  if (new Set(audiences).size !== audiences.length) throw new Error("Every environment must use a different Access audience.");
 }
 
 export function validateDeployment(config: DeploymentConfig, environment: string, variables: Record<string, string | undefined>) {
@@ -46,10 +57,8 @@ export function validateDeployment(config: DeploymentConfig, environment: string
   const databaseId = settings.d1_databases[0]!.database_id;
   if (!UUID.test(databaseId) || databaseId.startsWith("00000000-")) throw new Error("Set the environment's real D1 database ID.");
   if (!ACCESS_AUD.test(settings.vars.ACCESS_AUD)) throw new Error("Set the environment's real Cloudflare Access application audience.");
-  if (!/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(settings.vars.ACCESS_TEAM_DOMAIN)
-    || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.vars.OWNER_EMAIL)) {
-    throw new Error("Set the environment's Access team domain and owner email.");
-  }
+  if (!/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(settings.vars.ACCESS_TEAM_DOMAIN)) throw new Error("Set the environment's Access team domain.");
+  if (!settings.secrets?.required.includes("OWNER_EMAIL")) throw new Error("Declare OWNER_EMAIL as a required Worker secret, not a committed variable.");
   const site = new URL(settings.vars.ALLOWED_ORIGIN);
   if (!variables.VITE_API_BASE_URL) throw new Error("Missing VITE_API_BASE_URL.");
   const api = new URL(variables.VITE_API_BASE_URL);

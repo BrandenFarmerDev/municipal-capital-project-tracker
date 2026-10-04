@@ -14,9 +14,9 @@
   "vars": {
     "ACCESS_TEAM_DOMAIN": "cold-union-464d.cloudflareaccess.com",
     "ACCESS_AUD": "unconfigured",
-    "OWNER_EMAIL": "branden_farmer@live.com",
     "ALLOWED_ORIGIN": "http://localhost:5173"
   },
+  "secrets": { "required": ["OWNER_EMAIL"] },
   "d1_databases": [
     {
       "binding": "MCT_DB",
@@ -33,9 +33,9 @@
       "vars": {
         "ACCESS_TEAM_DOMAIN": "cold-union-464d.cloudflareaccess.com",
         "ACCESS_AUD": "3c357e8babb46f9615d2dc564ef7e526cdf002d91ac51dad75e82b83a58fe223",
-        "OWNER_EMAIL": "branden_farmer@live.com",
         "ALLOWED_ORIGIN": "https://capital-test.brandenfarmer.com"
       },
+      "secrets": { "required": ["OWNER_EMAIL"] },
       "d1_databases": [
         {
           "binding": "MCT_DB",
@@ -61,9 +61,9 @@
       "vars": {
         "ACCESS_TEAM_DOMAIN": "cold-union-464d.cloudflareaccess.com",
         "ACCESS_AUD": "513b2edf78733f77d95e90c59c7fd3d43cd8c5b150874282db44c6d17244557f",
-        "OWNER_EMAIL": "branden_farmer@live.com",
         "ALLOWED_ORIGIN": "https://capital.brandenfarmer.com"
       },
+      "secrets": { "required": ["OWNER_EMAIL"] },
       "d1_databases": [
         {
           "binding": "MCT_DB",
