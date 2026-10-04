@@ -292,6 +292,11 @@
   :where(.qe-app) .qe-table th {
     font-weight: var(--qe-font-weight-medium);
   }
+  :where(.qe-app) .qe-table [scope="row"] > a {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--qe-touch-target-min);
+  }
   :where(.qe-app) .qe-table [scope="row"], :where(.qe-app) .qe-table-identity {
     position: sticky;
     inset-inline-start: var(--qe-space-0);

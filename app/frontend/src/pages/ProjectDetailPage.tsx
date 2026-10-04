@@ -1,21 +1,23 @@
 import { useCallback, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { StateMessage } from "../components/StateMessage";
 import { StatusBadge } from "../components/StatusBadge";
 import { getProject } from "../lib/api";
 import { formatBudget, formatDate, labelFor } from "../lib/format";
 import { useAsync } from "../lib/use-async";
+import { projectsReturnPath } from "../lib/projects-return-path";
 
 export function ProjectDetailPage() {
   const { projectId = "" } = useParams();
+  const returnPath = projectsReturnPath(useLocation().state);
   const [attempt, setAttempt] = useState(0);
   const state = useAsync(useCallback((signal: AbortSignal) => getProject(projectId, signal), [projectId]), attempt);
   if (state.status !== "success") {
     return <>
       <PageHeader title="Project" />
       <StateMessage state={state} loading="Loading project..." retry={() => setAttempt((value) => value + 1)} />
-      <p><Link to="/projects">Back to projects</Link></p>
+      <p><Link className="qe-button" to={returnPath}>Back to projects</Link></p>
     </>;
   }
   const project = state.data;
@@ -42,6 +44,6 @@ export function ProjectDetailPage() {
           <td>{formatDate(milestone.plannedDate)}</td><td>{formatDate(milestone.actualDate)}</td>
         </tr>)}</tbody>
       </table></div></>}
-    <p><Link to="/projects">Back to projects</Link></p>
+    <p><Link className="qe-button" to={returnPath}>Back to projects</Link></p>
   </>;
 }

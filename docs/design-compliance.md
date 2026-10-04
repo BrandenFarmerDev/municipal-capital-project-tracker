@@ -9,6 +9,7 @@ Baseline: Quiet Enterprise Design Contract 1.0. Scope: the read-only frontend fo
 - Named horizontal table regions retain all columns and support keyboard scrolling. Project summaries use one description-list surface instead of individual field cards.
 - Native light, dark, and system theme selection, persistence, system-change subscription, and external before-paint initialization compatible with the restrictive CSP.
 - Filter clearing, visible sorting and page/result counts, pagination through loading and empty pages, and safe request retries.
+- Queue filters and cursor history live in the URL, survive reloads and browser Back, and are retained by the detail page's Back to projects link. Project row links and detail return links provide actual targets at least 44px high.
 - Runtime validation of project responses and calendar dates prevents malformed responses from crashing rendering. Failure messages distinguish temporary outages, missing owner configuration, network timeouts, and unreadable sign-in responses.
 
 ## Existing components reused
@@ -64,3 +65,7 @@ Chrome layout checks passed at 1536px and 390px widths with no page horizontal o
 ## Remaining risks or follow-up
 
 Actual browser-menu zoom and a full assistive-technology audit remain follow-up verification. Broader product modules need their own state and accessibility review when implemented. Passing automated tests does not prove complete WCAG compliance.
+
+## Post-merge live review: October 4, 2026
+
+A high-end reviewer (`gpt-6-astra`) checked the owner-authenticated production application and the isolated live preview with 32 clearly fictional projects and three milestones. Desktop, 390px, and 320px checks covered controls, keyboard navigation, horizontal table scrolling, route focus, both themes and system changes, filter combinations, pagination, missing routes, network failure/retry, maximum supported budgets, long labels, and reduced motion. Two confirmed contract/usability findings were corrected: queue context lost after detail navigation, and undersized project/return links. The review also prompted clearer initial and later-page empty-state guidance. Independent cost-effective QA (`gpt-6-luna`) reproduced both findings and reviewed the fixes; live retest evidence and remaining verification limits are recorded in `qa.md`.
