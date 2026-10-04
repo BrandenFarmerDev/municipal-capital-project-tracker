@@ -1,0 +1,375 @@
+@layer qe-reset {
+  :where(.qe-app) * {
+    box-sizing: border-box;
+  }
+  :where(.qe-app) body {
+    margin: var(--qe-space-0);
+  }
+}
+
+@layer qe-base {
+  :where(.qe-app) {
+    background: var(--qe-color-canvas);
+    color: var(--qe-color-text);
+    font-family: var(--qe-font-sans);
+    font-size: var(--qe-font-size-lg);
+    line-height: var(--qe-line-height-body);
+  }
+  :where(.qe-app) body {
+    font-size: var(--qe-font-size-md);
+  }
+  :where(.qe-app) h1 {
+    margin: var(--qe-space-0) var(--qe-space-0) var(--qe-space-1);
+    font-size: var(--qe-font-size-2xl);
+    font-weight: var(--qe-font-weight-semibold);
+    line-height: var(--qe-line-height-heading);
+    overflow-wrap: anywhere;
+  }
+  :where(.qe-app) h2 {
+    margin-block: var(--qe-space-8) var(--qe-space-4);
+    font-size: var(--qe-font-size-lg);
+    font-weight: var(--qe-font-weight-semibold);
+  }
+  :where(.qe-app) p {
+    max-inline-size: var(--qe-reading-max);
+  }
+  :where(.qe-app) a {
+    color: var(--qe-color-link);
+    text-underline-offset: var(--qe-space-1);
+  }
+  :where(.qe-app) a:hover {
+    text-decoration-thickness: var(--qe-border-width-strong);
+  }
+  :where(.qe-app) a:active {
+    color: var(--qe-color-text);
+  }
+  :where(.qe-app) :focus-visible {
+    outline: var(--qe-border-width-strong) solid var(--qe-color-focus);
+    outline-offset: var(--qe-space-1);
+  }
+  :where(.qe-app) h1:focus, :where(.qe-app) main:focus {
+    outline: none;
+  }
+}
+
+@layer qe-layout {
+  :where(.qe-app) .qe-container {
+    max-inline-size: var(--qe-content-max);
+    margin-inline: auto;
+    padding: var(--qe-space-6);
+  }
+  :where(.qe-app) .qe-shell-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--qe-space-4);
+    align-items: center;
+    justify-content: space-between;
+    min-block-size: var(--qe-header-height);
+    padding: var(--qe-space-2) var(--qe-space-6);
+    background: var(--qe-color-surface);
+    border-block-end: var(--qe-border-width) solid var(--qe-color-border-subtle);
+  }
+  :where(.qe-app) .qe-shell-utilities {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--qe-space-6);
+  }
+  :where(.qe-app) .qe-brand {
+    margin: var(--qe-space-0);
+    font-weight: var(--qe-font-weight-medium);
+  }
+  :where(.qe-app) .qe-nav {
+    display: flex;
+    gap: var(--qe-space-2);
+    margin: var(--qe-space-0);
+    padding: var(--qe-space-0);
+    list-style: none;
+  }
+  :where(.qe-app) .qe-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--qe-touch-target-min);
+    padding-inline: var(--qe-space-3);
+    border-block-end: var(--qe-border-width-strong) solid transparent;
+    text-decoration: none;
+  }
+  :where(.qe-app) .qe-nav a:hover {
+    background: var(--qe-color-surface-hover);
+  }
+  :where(.qe-app) .qe-nav a:active {
+    background: var(--qe-color-surface-active);
+  }
+  :where(.qe-app) .qe-nav a[aria-current="page"] {
+    font-weight: var(--qe-font-weight-semibold);
+    border-block-end-color: currentColor;
+  }
+  :where(.qe-app) .qe-shell-footer {
+    color: var(--qe-color-text-muted);
+    font-size: var(--qe-font-size-xs);
+    padding-block-start: var(--qe-space-0);
+  }
+  :where(.qe-app) .qe-page-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--qe-space-4);
+    margin-block-end: var(--qe-space-6);
+  }
+  :where(.qe-app) .qe-page-description {
+    margin: var(--qe-space-0);
+    color: var(--qe-color-text-secondary);
+  }
+  :where(.qe-app) .qe-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--qe-space-4);
+  }
+  :where(.qe-app) .qe-filters {
+    margin-block-end: var(--qe-space-6);
+  }
+  :where(.qe-app) .qe-field {
+    display: grid;
+    gap: var(--qe-space-2);
+    font-weight: var(--qe-font-weight-medium);
+  }
+  :where(.qe-app) .qe-theme-field {
+    display: flex;
+    align-items: center;
+    gap: var(--qe-space-2);
+  }
+  :where(.qe-app) .qe-pager {
+    margin-block-start: var(--qe-space-4);
+  }
+  :where(.qe-app) .qe-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--qe-fact-min)), 1fr));
+    gap: var(--qe-space-5);
+    margin-block: var(--qe-space-6);
+    padding: var(--qe-space-6);
+    background: var(--qe-color-surface);
+    border: var(--qe-border-width) solid var(--qe-color-border-subtle);
+    border-radius: var(--qe-radius-lg);
+  }
+  :where(.qe-app) .qe-facts dt {
+    color: var(--qe-color-text-muted);
+    font-size: var(--qe-font-size-sm);
+  }
+  :where(.qe-app) .qe-facts dd {
+    margin: var(--qe-space-0);
+    font-weight: var(--qe-font-weight-medium);
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 40rem) {
+    :where(.qe-app) .qe-container {
+      padding-inline: var(--qe-space-4);
+    }
+    :where(.qe-app) .qe-shell-header {
+      padding-inline: var(--qe-space-4);
+    }
+    :where(.qe-app) .qe-page-header {
+      flex-direction: column;
+    }
+    :where(.qe-app) .qe-shell-utilities {
+      gap: var(--qe-space-4);
+    }
+  }
+}
+
+@layer qe-components {
+  :where(.qe-app) .qe-skip-link {
+    position: absolute;
+    inset-inline-start: var(--qe-space-2);
+    inset-block-start: calc(-1 * var(--qe-space-16));
+    padding: var(--qe-space-3) var(--qe-space-4);
+    background: var(--qe-color-primary);
+    color: var(--qe-color-on-primary);
+    z-index: var(--qe-z-sticky);
+  }
+  :where(.qe-app) .qe-skip-link:focus {
+    inset-block-start: var(--qe-space-2);
+  }
+  :where(.qe-app) .qe-notice {
+    padding: var(--qe-space-4) var(--qe-space-5);
+    border: var(--qe-border-width) solid var(--qe-color-info-border);
+    border-inline-start-width: var(--qe-space-1);
+    border-radius: var(--qe-radius-md);
+    background: var(--qe-color-info-surface);
+    color: var(--qe-color-info);
+  }
+  :where(.qe-app) .qe-notice[data-tone="danger"] {
+    color: var(--qe-color-danger);
+    background: var(--qe-color-danger-surface);
+    border-color: var(--qe-color-danger-border);
+  }
+  :where(.qe-app) .qe-notice[data-tone="success"] {
+    color: var(--qe-color-success);
+    background: var(--qe-color-success-surface);
+    border-color: var(--qe-color-success-border);
+  }
+  :where(.qe-app) .qe-notice[data-tone="warning"] {
+    color: var(--qe-color-warning);
+    background: var(--qe-color-warning-surface);
+    border-color: var(--qe-color-warning-border);
+  }
+  :where(.qe-app) .qe-notice p {
+    margin-block: var(--qe-space-0) var(--qe-space-3);
+  }
+  :where(.qe-app) .qe-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--qe-touch-target-min);
+    padding: var(--qe-space-2) var(--qe-space-4);
+    border: var(--qe-border-width) solid var(--qe-color-control-border);
+    border-radius: var(--qe-radius-md);
+    background: var(--qe-color-surface);
+    color: var(--qe-color-text);
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--qe-duration-fast) var(--qe-easing-standard);
+  }
+  :where(.qe-app) .qe-button:hover {
+    background: var(--qe-color-surface-hover);
+  }
+  :where(.qe-app) .qe-button:active {
+    background: var(--qe-color-surface-active);
+  }
+  :where(.qe-app) .qe-button[data-variant="primary"] {
+    border-color: var(--qe-color-primary);
+    background: var(--qe-color-primary);
+    color: var(--qe-color-on-primary);
+  }
+  :where(.qe-app) .qe-button[data-variant="primary"]:hover {
+    background: var(--qe-color-primary-hover);
+  }
+  :where(.qe-app) .qe-button[data-variant="primary"]:active {
+    background: var(--qe-color-primary-active);
+  }
+  :where(.qe-app) .qe-button:disabled {
+    background: var(--qe-color-surface-subtle);
+    color: var(--qe-color-text-disabled);
+    border-color: var(--qe-color-border);
+    cursor: not-allowed;
+  }
+  :where(.qe-app) .qe-select {
+    min-block-size: var(--qe-touch-target-min);
+    max-inline-size: 100%;
+    padding: var(--qe-space-2);
+    border: var(--qe-border-width) solid var(--qe-color-control-border);
+    border-radius: var(--qe-radius-md);
+    background: var(--qe-color-surface);
+    color: var(--qe-color-text);
+    font: inherit;
+    font-weight: var(--qe-font-weight-regular);
+  }
+  :where(.qe-app) .qe-select:hover {
+    background: var(--qe-color-surface-hover);
+  }
+  :where(.qe-app) .qe-select:active {
+    background: var(--qe-color-surface-active);
+  }
+  :where(.qe-app) .qe-table-region {
+    max-inline-size: 100%;
+    overflow-x: auto;
+    border: var(--qe-border-width) solid var(--qe-color-border-subtle);
+    border-radius: var(--qe-radius-md);
+  }
+  :where(.qe-app) .qe-table {
+    inline-size: 100%;
+    min-inline-size: var(--qe-reading-max);
+    border-collapse: collapse;
+    background: var(--qe-color-surface);
+    font-size: var(--qe-font-size-sm);
+  }
+  :where(.qe-app) .qe-table th, :where(.qe-app) .qe-table td {
+    padding: var(--qe-space-3) var(--qe-space-4);
+    border-block-end: var(--qe-border-width) solid var(--qe-color-border-subtle);
+    text-align: start;
+    vertical-align: top;
+  }
+  :where(.qe-app) .qe-table th {
+    font-weight: var(--qe-font-weight-medium);
+  }
+  :where(.qe-app) .qe-table [scope="row"], :where(.qe-app) .qe-table-identity {
+    position: sticky;
+    inset-inline-start: var(--qe-space-0);
+    z-index: var(--qe-z-sticky);
+    inline-size: var(--qe-table-identity-width);
+    min-inline-size: var(--qe-table-identity-width);
+    max-inline-size: var(--qe-table-identity-width);
+    overflow-wrap: anywhere;
+    background: var(--qe-color-surface);
+  }
+  :where(.qe-app) .qe-table-identity {
+    background: var(--qe-color-surface-subtle);
+  }
+  :where(.qe-app) .qe-table thead {
+    background: var(--qe-color-surface-subtle);
+  }
+  :where(.qe-app) .qe-table tbody tr:hover {
+    background: var(--qe-color-surface-hover);
+  }
+  :where(.qe-app) .qe-table tr:hover [scope="row"] {
+    background: var(--qe-color-surface-hover);
+  }
+  :where(.qe-app) .qe-table .qe-numeric {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  :where(.qe-app) .qe-badge {
+    display: inline-block;
+    padding-inline: var(--qe-space-2);
+    border: var(--qe-border-width) solid var(--qe-color-border);
+    border-radius: var(--qe-radius-full);
+    font-size: var(--qe-font-size-sm);
+    font-weight: var(--qe-font-weight-medium);
+    color: var(--qe-color-text-secondary);
+    background: var(--qe-color-surface-subtle);
+    white-space: nowrap;
+  }
+  :where(.qe-app) .qe-badge[data-status="on_track"] {
+    color: var(--qe-color-info);
+    background: var(--qe-color-info-surface);
+    border-color: var(--qe-color-info-border);
+  }
+  :where(.qe-app) .qe-badge[data-status="at_risk"] {
+    color: var(--qe-color-warning);
+    background: var(--qe-color-warning-surface);
+    border-color: var(--qe-color-warning-border);
+  }
+  :where(.qe-app) .qe-badge[data-status="delayed"] {
+    color: var(--qe-color-danger);
+    background: var(--qe-color-danger-surface);
+    border-color: var(--qe-color-danger-border);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :where(.qe-app) .qe-button {
+      transition-duration: var(--qe-duration-instant);
+    }
+  }
+}
+
+@layer qe-utilities {
+  :where(.qe-app) .qe-visually-hidden {
+    position: absolute;
+    inline-size: var(--qe-border-width);
+    block-size: var(--qe-border-width);
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  :where(.qe-app) .qe-muted {
+    display: block;
+    margin: var(--qe-space-0);
+    color: var(--qe-color-text-muted);
+    font-size: var(--qe-font-size-sm);
+    font-weight: var(--qe-font-weight-regular);
+  }
+  :where(.qe-app) .qe-table-hint {
+    color: var(--qe-color-text-muted);
+    font-size: var(--qe-font-size-xs);
+  }
+}

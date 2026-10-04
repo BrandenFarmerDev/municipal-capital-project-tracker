@@ -1,0 +1,86 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "municipal-capital-project-tracker-api-local",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": false
+  },
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "cold-union-464d.cloudflareaccess.com",
+    "ACCESS_AUD": "unconfigured",
+    "OWNER_EMAIL": "branden_farmer@live.com",
+    "ALLOWED_ORIGIN": "http://localhost:5173"
+  },
+  "d1_databases": [
+    {
+      "binding": "MCT_DB",
+      "database_name": "municipal-capital-project-tracker-local",
+      "database_id": "00000000-0000-0000-0000-000000000001",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "preview": {
+      "name": "municipal-capital-project-tracker-api-preview",
+      "workers_dev": false,
+      "preview_urls": false,
+      "vars": {
+        "ACCESS_TEAM_DOMAIN": "cold-union-464d.cloudflareaccess.com",
+        "ACCESS_AUD": "3c357e8babb46f9615d2dc564ef7e526cdf002d91ac51dad75e82b83a58fe223",
+        "OWNER_EMAIL": "branden_farmer@live.com",
+        "ALLOWED_ORIGIN": "https://capital-test.brandenfarmer.com"
+      },
+      "d1_databases": [
+        {
+          "binding": "MCT_DB",
+          "database_name": "municipal-capital-project-tracker-preview",
+          "database_id": "3ad4f96a-ae08-41d8-9a15-f7071a2e15d3",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "routes": [
+        {
+          "pattern": "capital-api-test.brandenfarmer.com",
+          "custom_domain": true
+        }
+      ],
+      "observability": {
+        "enabled": false
+      }
+    },
+    "production": {
+      "name": "municipal-capital-project-tracker-api",
+      "workers_dev": false,
+      "preview_urls": false,
+      "vars": {
+        "ACCESS_TEAM_DOMAIN": "cold-union-464d.cloudflareaccess.com",
+        "ACCESS_AUD": "513b2edf78733f77d95e90c59c7fd3d43cd8c5b150874282db44c6d17244557f",
+        "OWNER_EMAIL": "branden_farmer@live.com",
+        "ALLOWED_ORIGIN": "https://capital.brandenfarmer.com"
+      },
+      "d1_databases": [
+        {
+          "binding": "MCT_DB",
+          "database_name": "municipal-capital-project-tracker-production",
+          "database_id": "2beaf9e2-0268-4722-a716-b252944cd289",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "routes": [
+        {
+          "pattern": "capital-api.brandenfarmer.com",
+          "custom_domain": true
+        }
+      ],
+      "observability": {
+        "enabled": false
+      }
+    }
+  }
+}

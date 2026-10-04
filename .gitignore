@@ -49,6 +49,9 @@ tmp/
 /mailbox-exports/
 /backups/
 
+# Local agent handoff documents
+/AGENT_HANDOFF.md
+
 # Editor and operating-system files
 .idea/
 .vscode/
