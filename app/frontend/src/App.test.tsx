@@ -49,7 +49,7 @@ describe("shell", () => {
   it("has no automated accessibility violations", async () => {
     stubApi(() => apiJson({ items: [], nextCursor: null }));
     const { container } = renderApp("/projects");
-    await screen.findByText("No projects recorded on this page.");
+    await screen.findByText("No projects recorded yet. Visit Home for an overview of the tracker.");
     expect(await violations(container)).toEqual([]);
   });
 });

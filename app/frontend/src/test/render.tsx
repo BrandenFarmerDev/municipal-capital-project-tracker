@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { MemoryRouter, useLocation } from "react-router-dom";
+import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { vi } from "vitest";
 import { App } from "../App";
 import { detail, health, summary } from "./fixtures";
@@ -20,11 +20,12 @@ export function stubApi(handler: Handler = defaultApi) {
   return mock;
 }
 
-function LocationProbe() {
-  const { pathname } = useLocation();
-  return <output data-testid="location">{pathname}</output>;
+function LocationProbe({ historyControls }: { historyControls: boolean }) {
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
+  return <><output data-testid="location">{pathname}{search}</output>{historyControls && <button type="button" onClick={() => navigate(-1)}>Test browser back</button>}</>;
 }
 
-export function renderApp(path = "/") {
-  return render(<MemoryRouter initialEntries={[path]}><App /><LocationProbe /></MemoryRouter>);
+export function renderApp(path = "/", historyControls = false) {
+  return render(<MemoryRouter initialEntries={[path]}><App /><LocationProbe historyControls={historyControls} /></MemoryRouter>);
 }

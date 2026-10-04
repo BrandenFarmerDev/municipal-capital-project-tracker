@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { apiJson, renderApp, stubApi } from "../test/render";
+import { apiJson, defaultApi, renderApp, stubApi } from "../test/render";
 import { summary } from "../test/fixtures";
 import { violations } from "../test/axe";
 
@@ -21,7 +21,7 @@ describe("ProjectsPage", () => {
   it("shows an empty state", async () => {
     stubApi(() => apiJson({ items: [], nextCursor: null }));
     renderApp("/projects");
-    expect(await screen.findByText("No projects recorded on this page.")).toBeInTheDocument();
+    expect(await screen.findByText("No projects recorded yet. Visit Home for an overview of the tracker.")).toBeInTheDocument();
   });
   it.each([[401, "Sign in"], [503, "temporarily unavailable"], [500, "could not be completed"]])("shows an error for status %s", async (status, text) => {
     stubApi(() => apiJson({ error: "x" }, status));
@@ -85,7 +85,7 @@ describe("ProjectsPage", () => {
     renderApp("/projects");
     await screen.findByRole("table");
     await userEvent.click(screen.getByRole("button", { name: "Next page" }));
-    await screen.findByText("No projects recorded on this page.");
+    await screen.findByText("No projects recorded on this page. Use Previous page to return to earlier results.");
     expect(screen.getByRole("button", { name: "Previous page" })).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "Previous page" }));
     await screen.findByRole("table");
@@ -95,5 +95,47 @@ describe("ProjectsPage", () => {
     renderApp("/projects");
     expect(await screen.findByRole("alert")).toHaveTextContent("invalid project list");
     expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
+  });
+  it.each(["Back to projects", "Test browser back"])("restores filters and cursor history through %s", async (action) => {
+    const fetcher = stubApi((url) => url.pathname === "/api/projects" ? apiJson({ items: [summary()], nextCursor: null }) : defaultApi(url));
+    renderApp("/projects?phase=construction&status=on_track&cursor=first&cursor=second", true);
+    await screen.findByRole("table");
+    expect(screen.getByLabelText("Phase")).toHaveValue("construction");
+    expect(screen.getByLabelText("Status")).toHaveValue("on_track");
+    expect(screen.getByText(/Page 3:/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("link", { name: /Mesa Street/ }));
+    await screen.findByText("Synthetic example project.");
+    expect(screen.getByRole("link", { name: "Back to projects" })).toHaveAttribute("href", "/projects?phase=construction&status=on_track&cursor=first&cursor=second");
+    await userEvent.click(screen.getByRole(action === "Back to projects" ? "link" : "button", { name: action }));
+    await screen.findByRole("table");
+    expect(screen.getByLabelText("Phase")).toHaveValue("construction");
+    expect(screen.getByLabelText("Status")).toHaveValue("on_track");
+    expect(screen.getByText(/Page 3:/)).toBeInTheDocument();
+    expect(String(fetcher.mock.calls.at(-1)![0])).toBe("/api/projects?phase=construction&status=on_track&cursor=second");
+    await userEvent.click(screen.getByRole("button", { name: "Previous page" }));
+    await screen.findByRole("table");
+    expect(screen.getByText(/Page 2:/)).toBeInTheDocument();
+    expect(String(fetcher.mock.calls.at(-1)![0])).toBe("/api/projects?phase=construction&status=on_track&cursor=first");
+  });
+  it("ignores invalid bookmarked filters and empty cursors", async () => {
+    const fetcher = stubApi();
+    renderApp("/projects?phase=bogus&status=bogus&cursor=");
+    await screen.findByRole("table");
+    expect(screen.getByLabelText("Phase")).toHaveValue("");
+    expect(screen.getByLabelText("Status")).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeDisabled();
+    expect(String(fetcher.mock.calls.at(-1)![0])).toBe("/api/projects");
+  });
+  it("changing a bookmarked filter clears the cursor history", async () => {
+    const fetcher = stubApi();
+    renderApp("/projects?phase=construction&status=on_track&cursor=first&cursor=second");
+    await screen.findByRole("table");
+    await userEvent.selectOptions(screen.getByLabelText("Phase"), "");
+    await screen.findByRole("table");
+    expect(String(fetcher.mock.calls.at(-1)![0])).toBe("/api/projects?status=on_track");
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeDisabled();
+    await userEvent.selectOptions(screen.getByLabelText("Status"), "");
+    await screen.findByRole("table");
+    expect(screen.getByTestId("location")).toHaveTextContent(/^\/projects$/);
   });
 });

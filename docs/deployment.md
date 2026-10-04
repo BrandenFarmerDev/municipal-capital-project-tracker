@@ -14,7 +14,7 @@ Provisioned on October 3, 2026 (America/Los_Angeles). Scope is the read-only fic
 | Pages branch | `main` | `preview` |
 | Access application | `7dcaf0bf-6fcd-44ca-ad80-d5fcd015d858` | `6b52727c-5d1a-46c3-8c96-248601006162` |
 
-The Pages project is `municipal-capital-project-tracker`. Both Workers and Pages branches were uploaded manually using the existing Wrangler OAuth session. Migration `0001_initial_schema.sql` is applied remotely in both D1 databases. The migration creates the fixed fictional demonstration tenant; the local project seed was not applied remotely, so the deployed project list starts empty.
+The Pages project is `municipal-capital-project-tracker`. Initial provisioning used the existing Wrangler OAuth session; subsequent releases use GitHub Actions. Migration `0001_initial_schema.sql` is applied remotely in both D1 databases. The migration creates the fixed fictional demonstration tenant; the local project seed was not applied remotely. Production has no project records. Live UI testing may temporarily insert clearly fictional, uniquely marked records in preview only; remove those records after verification.
 
 Both custom domains are active and owner-authenticated cross-origin browser requests to `/api/projects` returned 200 in both environments. See `qa.md` for current evidence and outstanding work.
 
@@ -36,7 +36,9 @@ GitHub environments `production` and `preview` exist. Repository variable `CLOUD
 
 The approved deployment token grants account D1, Pages, and Worker Scripts Write, plus Workers Routes Write and Zone Read restricted to `brandenfarmer.com`, with expiry October 4, 2027. Its value is stored only in Bitwarden and the GitHub Actions secret. Never put it in source, logs, or `VITE_` variables. Rotate before expiry. The scopes exclude Access administration and DNS Write.
 
-`ENABLE_DEPLOYMENTS` is `true`. The stored credential was validated by a successful [automated preview deployment](https://github.com/BrandenFarmerDev/municipal-capital-project-tracker/actions/runs/37182773234), including all quality gates, D1 migrations, Worker deployment, Pages upload, and the Access challenge check. CI always runs quality gates. Automated deployment runs only after quality succeeds on a push to `main`, or an explicitly dispatched preview deployment from a `bfarmer/*` branch. Pull requests do not deploy. Opening a PR does not merge it; production automation will run when the reviewed change is merged.
+The deployed owner configuration is also backed up privately in Bitwarden under `Credentials/shared` as `municipal-tracker / shared / cloudflare / OWNER_EMAIL`. Its notes cover both Worker environments and Access-policy alignment. Keep the value out of source and public frontend variables.
+
+`ENABLE_DEPLOYMENTS` is `true`. The stored credential was validated by successful automated [preview](https://github.com/BrandenFarmerDev/municipal-capital-project-tracker/actions/runs/37182773234) and [production](https://github.com/BrandenFarmerDev/municipal-capital-project-tracker/actions/runs/37214126790) deployments, including all quality gates, D1 migrations, Worker deployment, Pages upload, and the Access challenge check. PR #1 merged on October 4, 2026 as `211d3fc`. CI always runs quality gates. Automated deployment runs only after quality succeeds on a push to `main`, or an explicitly dispatched preview deployment from a `bfarmer/*` branch. Pull requests do not deploy. Opening a PR does not merge it; production automation runs when the reviewed change is merged.
 
 ## Routine release
 
