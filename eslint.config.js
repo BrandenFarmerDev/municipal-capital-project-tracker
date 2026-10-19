@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["**/.wrangler/**", "**/dist/**", "**/coverage/**", "**/node_modules/**", "reports/**"],
+    ignores: ["**/.wrangler/**", "**/.tools/**", "**/dist/**", "**/coverage/**", "**/node_modules/**", "reports/**"],
   },
   {
     files: ["**/*.{js,mjs}"],
