@@ -1,10 +1,26 @@
 import { spawnSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 
-// npm's audit-level setting has no "none" option. Fail on every reported severity.
-const result = spawnSync(process.execPath, [process.env.npm_execpath, "audit", "--json"], { encoding: "utf8" });
-if (result.error) throw result.error;
-const report = JSON.parse(result.stdout);
-if (report.error || !report.metadata?.vulnerabilities) throw new Error("Dependency audit did not return a valid report.");
-const vulnerabilities = report.metadata.vulnerabilities;
-console.log("Dependency vulnerabilities:", vulnerabilities);
-if (result.status !== 0 || vulnerabilities.total !== 0) process.exitCode = 1;
+export function validateAuditResult(result) {
+  if (result.error) throw result.error;
+  let report;
+  try {
+    report = JSON.parse(result.stdout);
+  } catch {
+    throw new Error("Dependency audit did not return valid JSON.");
+  }
+  const vulnerabilities = report.metadata?.vulnerabilities;
+  if (report.error || !vulnerabilities || typeof vulnerabilities.total !== "number") {
+    throw new Error("Dependency audit did not return a valid report.");
+  }
+  return { exitCode: result.status !== 0 || vulnerabilities.total !== 0 ? 1 : 0, vulnerabilities };
+}
+
+export function auditDependencies(run = (command, args) => spawnSync(command, args, { encoding: "utf8" })) {
+  const result = run(process.execPath, [process.env.npm_execpath, "audit", "--json"]);
+  const { exitCode, vulnerabilities } = validateAuditResult(result);
+  console.log("Dependency vulnerabilities:", vulnerabilities);
+  process.exitCode = exitCode;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) auditDependencies();

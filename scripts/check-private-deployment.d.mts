@@ -1,0 +1,2 @@
+export function presentsExpectedAccessChallenge(response: { status: number; headers: { get(name: string): string | null } }, settings: { vars: { ACCESS_TEAM_DOMAIN: string; ACCESS_AUD: string } }): boolean;
+export function verifyPrivateDeployment(configPath: string, environment: string, siteOrigin: string, apiBaseUrl: string, request?: typeof fetch, readFile?: (path: string, encoding: string) => string): Promise<void>;

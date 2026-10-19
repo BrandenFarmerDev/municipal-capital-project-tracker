@@ -1,0 +1,17 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Tool downloads, node dependencies, and generated evidence are vendor or build output, not repository source."
+paths = [
+  '''(?i)^\.tools/''',
+  '''(?i)^node_modules/''',
+  '''(?i)^reports/''',
+]
+
+[[allowlists]]
+description = "Cloudflare Access audience identifiers are public application IDs, not credentials; match only their exact config field shape."
+matchCondition = "AND"
+regexTarget = "line"
+paths = ['''^app/backend/wrangler\.jsonc$''']
+regexes = ['''"ACCESS_AUD"\s*:\s*"[a-fA-F0-9]{64}"''']

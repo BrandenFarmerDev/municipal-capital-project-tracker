@@ -1,5 +1,6 @@
 # Node and package-manager caches (commit lockfiles)
 node_modules/
+.tools/
 .npm/
 .pnpm-store/
 .yarn/cache/
