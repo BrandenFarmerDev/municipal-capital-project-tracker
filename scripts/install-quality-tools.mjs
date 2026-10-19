@@ -69,13 +69,20 @@ async function downloadAndVerify(name, version, artifact) {
   return archive;
 }
 
-function extract(name, archive, destination) {
-  if (existsSync(binaries[name])) return;
+export function extractArchive(archive, destination, targetPlatform = platform, spawn = spawnSync) {
   rmSync(destination, { recursive: true, force: true });
   mkdirSync(destination, { recursive: true });
-  const result = spawnSync("tar", ["-xf", archive, "-C", destination], { stdio: "inherit" });
+  const isLinuxZip = targetPlatform === "linux" && archive.endsWith(".zip");
+  const command = isLinuxZip ? "unzip" : "tar";
+  const args = isLinuxZip ? ["-q", archive, "-d", destination] : ["-xf", archive, "-C", destination];
+  const result = spawn(command, args, { stdio: "inherit" });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`Could not extract ${archive}.`);
+}
+
+function extract(name, archive, destination) {
+  if (existsSync(binaries[name])) return;
+  extractArchive(archive, destination);
 }
 
 async function install(name) {
