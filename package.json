@@ -25,12 +25,14 @@
     "tools:install": "node scripts/install-quality-tools.mjs",
     "security:scan": "node scripts/security-scan.mjs",
     "security:artifacts": "node scripts/security-scan.mjs --secrets-only",
+    "security:artifacts:local": "node scripts/security-scan.mjs --local-build-artifacts",
     "deployment:preflight": "node scripts/deployment-preflight.mjs",
+    "deployment:release": "node scripts/deployment-release.mjs",
     "hooks:install": "node scripts/install-hooks.mjs",
     "hooks:test": "vitest run",
     "workflows:check": "node scripts/run-actionlint.mjs",
     "pre-push": "node scripts/pre-push.mjs",
-    "quality": "npm run tools:install && npm run lint && npm run test:coverage && npm run duplication && npm run cf:types:check && npm run typecheck && npm run build && npm run security:scan && npm run db:migrate:local && npm run audit && npm run workflows:check && npm run hooks:test"
+    "quality": "npm run tools:install && npm run lint && npm run test:coverage && npm run duplication && npm run cf:types:check && npm run typecheck && npm run build && npm run security:artifacts:local && npm run security:scan && npm run db:migrate:local && npm run audit && npm run workflows:check && npm run hooks:test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

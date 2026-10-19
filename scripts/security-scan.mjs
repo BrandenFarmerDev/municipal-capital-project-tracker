@@ -56,7 +56,7 @@ async function scanWithCodeQL({ runScanner = run, readSarif = (path) => readFile
   const reportPath = "reports/security/codeql.sarif";
   await makeReportDirectory();
   runScanner(tool("codeql"), ["database", "create", database, "--language=javascript-typescript", "--build-mode=none", `--source-root=${sourceRoot}`, "--overwrite"]);
-  runScanner(tool("codeql"), ["database", "analyze", database, "codeql/javascript-queries:codeql-suites/javascript-security-extended.qls", "--format=sarifv2.1.0", `--output=${reportPath}`]);
+  runScanner(tool("codeql"), ["database", "analyze", database, "codeql/javascript-queries@2.4.7:codeql-suites/javascript-security-extended.qls", "--format=sarifv2.1.0", `--output=${reportPath}`]);
   validateSarif(await readReport(reportPath, readSarif), "CodeQL", true);
 }
 
@@ -105,9 +105,15 @@ export function deploymentArtifactPaths(environment) {
   return [`app/backend/dist/${environment}`, "app/frontend/dist"];
 }
 
+export function localBuildArtifactPaths() {
+  return ["app/backend/dist", "app/frontend/dist"];
+}
+
 export async function runScanCli(args, environment, dependencies = {}) {
   const secretOnly = args[0] === "--secrets-only";
   let paths = args.slice(secretOnly ? 1 : 0);
+  const localBuildArtifacts = args[0] === "--local-build-artifacts";
+  if (localBuildArtifacts) paths = localBuildArtifactPaths();
   if (!paths.length && secretOnly) paths = deploymentArtifactPaths(environment);
   if (!paths.length) {
     return withSourceSnapshot(async (root) => {
@@ -115,7 +121,7 @@ export async function runScanCli(args, environment, dependencies = {}) {
       await scanWithCodeQL({ ...dependencies, sourceRoot: root });
     }, dependencies);
   }
-  if (secretOnly) await scanSecrets(paths, dependencies);
+  if (secretOnly || localBuildArtifacts) await scanSecrets(paths, dependencies);
   else await scan(paths, dependencies);
 }
 

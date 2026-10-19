@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { git, run, runPrePush, runValidatedQuality, validatePublication } from "./pre-push.mjs";
@@ -62,9 +64,14 @@ describe("pre-push publication boundary", () => {
     const result = spawnSync(process.execPath, [script], { input: "malformed\n", encoding: "utf8" });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Pre-push blocked");
-    const outsideRepository = spawnSync(process.execPath, [script], { cwd: "C:/", input: "malformed\n", encoding: "utf8" });
-    expect(outsideRepository.status).toBe(1);
-    expect(outsideRepository.stderr).toContain("Pre-push blocked");
+    const outsideRepository = mkdtempSync(join(tmpdir(), "mct-hook-outside-repo-"));
+    try {
+      const resultOutsideRepository = spawnSync(process.execPath, [script], { cwd: outsideRepository, input: "malformed\n", encoding: "utf8" });
+      expect(resultOutsideRepository.status).toBe(1);
+      expect(resultOutsideRepository.stderr).toContain("Pre-push blocked");
+    } finally {
+      rmSync(outsideRepository, { recursive: true, force: true });
+    }
     expect(() => runPrePush("malformed")).toThrow(/Malformed/);
     expect(git(["status", "--porcelain"], () => ({ status: 0, stdout: "", stderr: "" }))).toBe("");
     expect(() => git(["status"], () => ({ status: 1, stdout: "", stderr: "error" }))).toThrow("error");
