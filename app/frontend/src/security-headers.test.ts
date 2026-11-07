@@ -29,7 +29,14 @@ describe("Cloudflare Pages security headers", () => {
     expect(read("robots.txt")).toContain("Disallow: /");
     expect(read("_redirects").trim()).toBe("/* /index.html 200");
   });
-  it("caches only fingerprinted assets", () => {
-    expect(headers).toMatch(/\/assets\/\*\n\s+Cache-Control: public, max-age=31536000, immutable/);
+  it("prevents storage of protected HTML and assets without a more-specific cache override", () => {
+    const rules = headers.trim().split(/\r?\n\s*\r?\n/).map((block) => {
+      const [pattern, ...values] = block.split(/\r?\n/);
+      return { pattern, cache: values.filter((value) => /^\s+Cache-Control:/i.test(value)) };
+    });
+    expect(rules[0].pattern).toBe("/*");
+    expect(rules[0].cache).toEqual(["  Cache-Control: private, no-store"]);
+    expect(rules.slice(1).every((rule) => rule.cache.length === 0)).toBe(true);
+    expect(headers).not.toMatch(/Cache-Control: public|immutable/);
   });
 });

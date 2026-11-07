@@ -1,5 +1,7 @@
 # Municipal Capital Project Tracker
 
+Protected Pages HTML and assets use `Cache-Control: private, no-store`. The header regression and build verifier check the source policy and copied deployment artifact. Before releasing this cache fix, purge previous public cache entries and verify effective authenticated headers and sign-out behavior; previously downloaded content cannot be recalled. Release still requires reviewed merge approval and the existing quality gates.
+
 **Status: Prototype — read-only foundation implemented.** The app lists fictional capital projects and displays project details and milestones. Project editing and the broader construction workflows remain planned.
 
 A synthetic-data prototype for tracking public capital projects from request through construction and closeout. Its purpose is to keep project status, budget changes, decisions, and public updates connected to a shared history.
