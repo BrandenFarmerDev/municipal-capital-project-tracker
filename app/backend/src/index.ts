@@ -2,6 +2,7 @@ import { healthRoute } from "./routes/health";
 import { projectsRoute } from "./routes/projects";
 import { apiError, hardenResponse, methodNotAllowed } from "./services/http";
 import { authorize, Problem } from "./services/security";
+import { protectRequest } from "./services/request-protection";
 
 const isProtectedPath = (path: string) => path === "/api/projects" || path.startsWith("/api/projects/");
 
@@ -13,9 +14,11 @@ async function route(request: Request, env: Env, path: string): Promise<Response
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const blocked = await protectRequest(request, env);
     const origin = request.headers.get("Origin");
     const allowedOrigin = origin === env.ALLOWED_ORIGIN ? origin : null;
-    const finish = (response: Response) => hardenResponse(response, allowedOrigin);
+    const finish = (response: Response) => hardenResponse(request.method === "HEAD" ? new Response(null, { status: response.status, headers: response.headers }) : response, allowedOrigin);
+    if (blocked) return finish(blocked);
     if (origin !== null && !allowedOrigin) {
       return finish(apiError(403, "origin_not_allowed", "This origin is not allowed."));
     }
@@ -26,7 +29,7 @@ export default {
     }
     try {
       const response = await route(request, env, path);
-      return finish(request.method === "HEAD" ? new Response(null, { status: response.status, headers: response.headers }) : response);
+      return finish(response);
     } catch (error) {
       const known = error instanceof Problem;
       return finish(apiError(known ? error.status : 500, known ? error.code : "request_failed", "The request could not be completed."));

@@ -23,5 +23,7 @@ describe("http helpers", () => {
     const cors = hardenResponse(json({}), "https://app.example.com");
     expect(cors.headers.get("Access-Control-Allow-Origin")).toBe("https://app.example.com");
     expect(cors.headers.get("Access-Control-Allow-Credentials")).toBe("true");
+    const exposed = hardenResponse(json({}, { headers: { "Access-Control-Expose-Headers": "X-Existing" } }), "https://app.example.com");
+    expect(exposed.headers.get("Access-Control-Expose-Headers")).toBe("X-Existing, Retry-After");
   });
 });

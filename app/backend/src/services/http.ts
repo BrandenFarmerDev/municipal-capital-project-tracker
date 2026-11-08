@@ -25,6 +25,8 @@ export function hardenResponse(response: Response, allowedOrigin: string | null)
   if (allowedOrigin) {
     response.headers.set("Access-Control-Allow-Origin", allowedOrigin);
     response.headers.set("Access-Control-Allow-Credentials", "true");
+    const exposed = response.headers.get("Access-Control-Expose-Headers");
+    response.headers.set("Access-Control-Expose-Headers", exposed ? `${exposed}, Retry-After` : "Retry-After");
   }
   return response;
 }

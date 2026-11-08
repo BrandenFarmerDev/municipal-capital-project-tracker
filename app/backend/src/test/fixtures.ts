@@ -13,6 +13,7 @@ export function fixture({ seed = true }: { seed?: boolean } = {}) {
   const database = createTestD1();
   if (seed) database.raw.exec(SEED_SQL);
   const env: Env = {
+    API_RATE_LIMITER: { limit: vi.fn().mockResolvedValue({ success: true }) },
     MCT_DB: database.db,
     ALLOWED_ORIGIN: "https://capital-test.example.com",
     ACCESS_TEAM_DOMAIN: "test.cloudflareaccess.com",
