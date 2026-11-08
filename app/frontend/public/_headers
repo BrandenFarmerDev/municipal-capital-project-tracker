@@ -1,4 +1,5 @@
 /*
+  Cache-Control: private, no-store
   Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://capital-api-test.brandenfarmer.com https://capital-api.brandenfarmer.com; font-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
   Cross-Origin-Opener-Policy: same-origin
   Permissions-Policy: camera=(), geolocation=(), microphone=(), payment=(), usb=()
@@ -7,6 +8,3 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   X-Robots-Tag: noindex, nofollow
-
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable

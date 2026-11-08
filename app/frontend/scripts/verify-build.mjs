@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
 
 const headers = readFileSync(new URL("../dist/_headers", import.meta.url), "utf8");
+if (headers !== readFileSync(new URL("../public/_headers", import.meta.url), "utf8")) {
+  throw new Error("Built Pages headers differ from the reviewed private-cache policy.");
+}
 for (const required of [
   "Content-Security-Policy:",
   "Cross-Origin-Opener-Policy: same-origin",
