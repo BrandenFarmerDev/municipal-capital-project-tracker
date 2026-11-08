@@ -47,6 +47,8 @@ npm test                   # unit tests
 The quality command downloads pinned Gitleaks 8.30.1, CodeQL CLI 2.27.2, actionlint 1.7.12 and CodeQL JavaScript query pack 2.4.7, verifies each tool archive SHA-256 digest, and caches them under ignored `.tools/` (query pack under the CodeQL user's pack cache). It also writes a local CommonJS package boundary beside CodeQL's bundled parser so Node does not apply this ESM repository's package type to the tool wrapper. The pre-push hook runs the same command against the exact clean `HEAD`; GitHub Actions repeats it. Deployment builds run a separate secret scan over the environment-specific Worker bundle and frontend output before remote migrations or uploads.
 
 Protected API routes need Cloudflare Access; local configuration uses placeholders, so they return 503 `auth_unconfigured` until real values are set (see `docs/deployment.md`). Keep secrets in local ignored configuration or Worker secrets; `VITE_` variables are public.
+
+See [API request protection](docs/api-protection.md) for the common 300/minute limit, manual retry guidance and release/rollback conditions.
 ## Portfolio
 
 - [Project outline](https://brandenfarmer.com/work#municipal-capital-project-tracker)

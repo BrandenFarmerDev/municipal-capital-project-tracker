@@ -8,6 +8,7 @@ export class ApiRequestError extends Error {
 const messages: Record<number, string> = {
   401: "Sign in through Cloudflare Access as the owner to continue.",
   404: "That item was not found.",
+  429: "Too many requests. Wait at least 60 seconds, then try again manually.",
   503: "The service is temporarily unavailable. Try again shortly or contact the application owner.",
 };
 
@@ -16,14 +17,22 @@ const withTimeout = (signal: AbortSignal | undefined, ms: number) =>
 
 async function getJson(path: string, signal?: AbortSignal): Promise<unknown> {
   const baseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
-  const response = await fetch(`${baseUrl}${path}`, { credentials: "include", signal: withTimeout(signal, 10000) });
-  if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null);
-    const unconfigured = typeof body === "object" && body !== null && "error" in body && body.error === "auth_unconfigured";
-    throw new ApiRequestError(response.status, unconfigured ? "Owner access is not configured for this environment. Contact the application owner." : messages[response.status] ?? "The request could not be completed. Try again shortly.");
+  const requestSignal = withTimeout(signal, 10000);
+  const response = await fetch(`${baseUrl}${path}`, { credentials: "include", signal: requestSignal });
+  let body: unknown;
+  try { body = await response.json(); }
+  catch (error) {
+    requestSignal.throwIfAborted();
+    if (typeof error === "object" && error !== null && "name" in error && (error.name === "AbortError" || error.name === "TimeoutError")) throw error;
+    if (response.ok) throw new Error("The API returned an unreadable response. Try again or sign in through Cloudflare Access.");
+    body = null;
   }
-  try { return await response.json(); }
-  catch { throw new Error("The API returned an unreadable response. Try again or sign in through Cloudflare Access."); }
+  if (!response.ok) {
+    const unconfigured = typeof body === "object" && body !== null && "error" in body && body.error === "auth_unconfigured";
+    const limiterUnavailable = response.status === 503 && typeof body === "object" && body !== null && "error" in body && body.error === "rate_limit_unavailable";
+    throw new ApiRequestError(response.status, unconfigured ? "Owner access is not configured for this environment. Contact the application owner." : limiterUnavailable ? "Request protection is temporarily unavailable. Wait at least 60 seconds, then try again manually." : messages[response.status] ?? "The request could not be completed. Try again shortly.");
+  }
+  return body;
 }
 
 export async function getApiHealth(signal?: AbortSignal): Promise<HealthResponse> {
